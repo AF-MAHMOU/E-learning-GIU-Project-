@@ -20,6 +20,7 @@ export class Course {
     @Prop({ type: String, required: true })
     category: string;
 
+    // Referenced by instructor
     @Prop({ type: String, required: true })
     createdBy: string;
 

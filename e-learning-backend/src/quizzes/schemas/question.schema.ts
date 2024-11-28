@@ -19,6 +19,9 @@ export class Question {
 
     @Prop({ type: String, required: true })
     correctAnswer: string;
+
+    @Prop({ type: String, required: true, enum: ['MCQ', 'TrueFalse'] })
+    type: string;
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);

@@ -1,9 +1,9 @@
-import { IsString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
+import {IsString, IsNotEmpty, IsOptional, IsArray, IsEnum} from 'class-validator';
 
 export class CreateModuleDto {
     @IsString()
     @IsNotEmpty()
-    id: string;
+    moduleId: string;
 
     @IsString()
     @IsNotEmpty()
@@ -16,6 +16,10 @@ export class CreateModuleDto {
     @IsString()
     @IsNotEmpty()
     content: string;
+
+    @IsString()
+    @IsEnum(['Easy', 'Medium', 'Hard'])
+    difficulty: string;
 
     @IsArray()
     @IsOptional()

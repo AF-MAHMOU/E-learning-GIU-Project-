@@ -6,7 +6,7 @@ export type ModuleDocument = Module & Document;
 @Schema()
 export class Module {
     @Prop({ type: String, required: true, unique: true })
-    id: string;
+    moduleId: string;
 
     @Prop({ type: String, required: true })
     courseId: string;
@@ -17,8 +17,11 @@ export class Module {
     @Prop({ type: String, required: true })
     content: string;
 
-    @Prop({ type: [String], required: false })
-    resources?: string[];
+    // @Prop({ type: [String], required: false })
+    // resources?: string[];
+
+    @Prop({ type: String, required: true })
+    difficulty: string;
 
     @Prop({ type: Date, default: Date.now, immutable: true })
     createdAt: Date;

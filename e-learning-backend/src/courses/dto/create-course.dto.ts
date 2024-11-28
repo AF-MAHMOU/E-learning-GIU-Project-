@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
+import {IsString, IsNotEmpty, IsEnum, MinLength} from 'class-validator';
 
 export class CreateCourseDto {
     @IsString()
@@ -11,9 +11,11 @@ export class CreateCourseDto {
 
     @IsString()
     @IsNotEmpty()
+    @MinLength(10)
     description: string;
 
     @IsString()
+    @IsNotEmpty()
     @IsEnum(['Beginner', 'Intermediate', 'Advanced'])
     difficulty: string;
 

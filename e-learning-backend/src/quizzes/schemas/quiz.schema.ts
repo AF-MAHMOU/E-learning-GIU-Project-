@@ -12,10 +12,13 @@ export class Quiz {
     moduleId: string;
 
     @Prop({ type: Array, required: true })
-    questions: object[];
+    questions: string[];
 
     @Prop({ type: Date, default: Date.now, immutable: true })
     createdAt: Date;
+
+    @Prop({ type: Date, default: Date.now, immutable: true })
+    createdBy: string;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

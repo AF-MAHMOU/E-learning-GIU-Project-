@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+export type ProgressDocument = Progress & Document;
+
 @Schema()
 export class Progress extends Document {
     @Prop({ required: true })
