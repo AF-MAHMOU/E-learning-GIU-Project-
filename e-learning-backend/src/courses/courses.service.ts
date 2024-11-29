@@ -15,16 +15,26 @@ export class CourseService {
     ) {}
 
     // Student Services
+    // Not working.
     async searchCourses(query: string, filters?: any) {
+        if (!query) {
+            return this.courseModel.find(filters);
+        }
+
         const searchQuery = {
             $or: [
                 { title: { $regex: query, $options: 'i' } },
-                { description: { $regex: query, $options: 'i' } },
                 { category: { $regex: query, $options: 'i' } }
             ],
             ...filters
         };
-        return this.courseModel.find(searchQuery);
+
+        const courses = await this.courseModel.find(searchQuery);
+        if (courses.length === 0) {
+            throw new NotFoundException('No courses found matching the search criteria');
+        }
+
+        return courses;
     }
 
     async enrollInCourse(courseId: string, userId: string) {
@@ -58,7 +68,7 @@ export class CourseService {
 
     async createModule(moduleData: Partial<Module>, instructorId: string) {
         const course = await this.courseModel.findOne({
-            id: moduleData.courseId,
+            courseId: moduleData.courseId,
             createdBy: instructorId
         });
 
@@ -87,13 +97,14 @@ export class CourseService {
         return this.courseModel.find();
     }
 
-    async archiveCourse(courseId: string) {
-        // Implementation would depend on how you want to handle archiving
-        // Could be a soft delete, moving to separate collection, etc.
-        return this.courseModel.findOneAndUpdate(
-            { id: courseId },
-            { $set: { status: 'archived' } },
-            { new: true }
-        );
-    }
+    // DO NOT IMPLEMENT
+    // async archiveCourse(courseId: string) {
+    //     // Implementation would depend on how you want to handle archiving
+    //     // Could be a soft delete, moving to separate collection, etc.
+    //     return this.courseModel.findOneAndUpdate(
+    //         { id: courseId },
+    //         { $set: { status: 'archived' } },
+    //         { new: true }
+    //     );
+    // }
 }
