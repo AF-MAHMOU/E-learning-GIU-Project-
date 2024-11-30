@@ -15,17 +15,28 @@ export class CourseService {
     ) {}
 
     // Student Services
-    async searchCourses(query: string, filters?: any) {
-        const searchQuery = {
-            $or: [
-                { title: { $regex: query, $options: 'i' } },
-                { description: { $regex: query, $options: 'i' } },
-                { category: { $regex: query, $options: 'i' } }
-            ],
-            ...filters
-        };
-        return this.courseModel.find(searchQuery);
+    // Not working.
+    async searchCourses(filters: any) {
+        // Build the query directly from valid filters
+        const searchQuery: any = {};
+        if (filters.title) {
+            searchQuery['title'] = { $regex: new RegExp(filters.title, 'i') };
+        }
+        if (filters.category) {
+            searchQuery['category'] = { $regex: new RegExp(filters.category, 'i') };
+        }
+    
+        // Execute the query
+        const courses = await this.courseModel.find(searchQuery).exec();
+    
+        // Handle no results found
+        if (!courses || courses.length === 0) {
+            throw new NotFoundException('No courses found matching the search criteria');
+        }
+    
+        return courses;
     }
+    
 
     async enrollInCourse(courseId: string, userId: string) {
         const course = await this.courseModel.findById(courseId);
@@ -58,7 +69,7 @@ export class CourseService {
 
     async createModule(moduleData: Partial<Module>, instructorId: string) {
         const course = await this.courseModel.findOne({
-            id: moduleData.courseId,
+            courseId: moduleData.courseId,
             createdBy: instructorId
         });
 
@@ -87,13 +98,14 @@ export class CourseService {
         return this.courseModel.find();
     }
 
-    async archiveCourse(courseId: string) {
-        // Implementation would depend on how you want to handle archiving
-        // Could be a soft delete, moving to separate collection, etc.
-        return this.courseModel.findOneAndUpdate(
-            { id: courseId },
-            { $set: { status: 'archived' } },
-            { new: true }
-        );
-    }
+    // DO NOT IMPLEMENT
+    // async archiveCourse(courseId: string) {
+    //     // Implementation would depend on how you want to handle archiving
+    //     // Could be a soft delete, moving to separate collection, etc.
+    //     return this.courseModel.findOneAndUpdate(
+    //         { id: courseId },
+    //         { $set: { status: 'archived' } },
+    //         { new: true }
+    //     );
+    // }
 }
