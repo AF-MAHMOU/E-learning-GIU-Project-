@@ -7,25 +7,25 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ChatService {
-    constructor(
-        @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
-    ) {}
+  constructor(
+    @InjectModel(Message.name) private messageModel: Model<MessageDocument>,
+  ) {}
 
     // Send a new message
-    async createMessage(createMessageDto: CreateMessageDto) {
+  async createMessage(createMessageDto: CreateMessageDto) {
         const { conversationId, senderId, content } = createMessageDto;
 
         // Create unique message ID using UUID
-        const messageId = uuidv4();
+    const messageId = uuidv4();
 
-        // Create new message
-        const message = new this.messageModel({
-            messageId,
-            conversationId,
-            senderId,
+    // Create new message
+    const message = new this.messageModel({
+      messageId,
+      conversationId,
+      senderId,
             content,
-            sentAt: new Date(),
-        });
+      sentAt: new Date(),
+    });
 
         return await message.save();
     }

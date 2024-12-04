@@ -12,26 +12,27 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-
-  
   // Login function
   async login(email: string, password: string) {
     const user = await this.usersService.findUserByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-  
+
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (isPasswordValid) {
-      const payload = { userId: user.user_id, email: user.email, role: user.role };
+      const payload = {
+        userId: user.user_id,
+        email: user.email,
+        role: user.role,
+      };
       const token = this.jwtService.sign(payload);
       console.log('Generated Token:', token); // Add this line to debug
-      return { access_token: token };
+      return { access_token: token, role: user.role };
     }
-  
+
     throw new UnauthorizedException('Invalid credentials');
   }
-  
 
   // Register function
   async register(registerDto: any) {
@@ -63,7 +64,7 @@ export class AuthService {
       const decoded = this.jwtService.verify(token); // This will throw if the token is expired or invalid
       return decoded;
     } catch (error) {
-      throw new UnauthorizedException('Invalid or expired token');
+      throw new UnauthorizedException('Invalid or expired token', error);
     }
   }
 }

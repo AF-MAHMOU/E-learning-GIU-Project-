@@ -11,12 +11,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';  // Import ConfigM
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UsersModule,
-    ConfigModule.forRoot(),  // Add ConfigModule here to load env variables
+    ConfigModule.forRoot(), // Add ConfigModule here to load env variables
     JwtModule.registerAsync({
-      imports: [ConfigModule],  // Import ConfigModule
-      inject: [ConfigService],  // Inject ConfigService
+      imports: [ConfigModule], // Import ConfigModule
+      inject: [ConfigService], // Inject ConfigService
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),  // Get JWT_SECRET from config
+        secret: configService.get<string>('JWT_SECRET'), // Get JWT_SECRET from config
         signOptions: { expiresIn: '1h' },
       }),
     }),

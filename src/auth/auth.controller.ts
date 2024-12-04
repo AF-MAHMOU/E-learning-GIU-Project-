@@ -9,30 +9,34 @@ export class AuthController {
 
   // Login route
   @Post('login')
-  async login(@Body() body: { email: string; password: string }, @Res() res: Response) {
+  async login(
+    @Body() body: { email: string; password: string },
+    @Res() res: Response,
+  ) {
     const { email, password } = body;
     try {
       // This should return the token after successful login
-      const { access_token } = await this.authService.login(email, password);
-      return res.json({ access_token });
+      const { access_token, role } = await this.authService.login(
+        email,
+        password,
+      );
+      return res.json({ access_token, role });
     } catch (error) {
       return res.status(401).json({ message: error.message });
     }
   }
-  
-  
+
   // Register route
   @Post('register')
-async register(@Body() body: any, @Res() res: Response) {
-  try {
-    // Register the new user without requiring a token
-    const user = await this.authService.register(body);
-    return res.status(201).json(user); // Return the created user or a success message
-  } catch (error) {
-    return res.status(400).json({ message: error.message });
+  async register(@Body() body: any, @Res() res: Response) {
+    try {
+      // Register the new user without requiring a token
+      const user = await this.authService.register(body);
+      return res.status(201).json(user); // Return the created user or a success message
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
   }
-}
-
 
   // Logout route
   @Post('logout')
