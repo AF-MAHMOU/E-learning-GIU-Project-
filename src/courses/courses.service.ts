@@ -10,6 +10,8 @@ import { Module, ModuleDocument } from './schemas/module.schema';
 import { Progress, ProgressDocument } from './schemas/progress.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
+import { UnauthorizedException } from '@nestjs/common';
+
 
 @Injectable()
 export class CourseService {
@@ -70,17 +72,30 @@ export class CourseService {
   }
 
   // Instructor Services
-  async createCourse(courseData: Partial<Course>, token: string) {
-    const decodedToken = this.jwtService.verify(token);
-    const instructorId = decodedToken.sub; // Assuming the instructorId is stored in the 'sub' field
-
-    const course = new this.courseModel({
-      ...courseData,
-      id: uuidv4(),
-      createdBy: instructorId,
-    });
-    return course.save();
+  async createCourse(courseData: Partial<Course>, instructorId: string) {
+    try {
+      // Log to ensure the received instructor ID is valid
+      console.log('Instructor ID:', instructorId);
+  
+      // Create the course with the provided data and instructorId
+      const course = new this.courseModel({
+        ...courseData,
+        id: uuidv4(),  // Ensure each course has a unique ID
+        createdBy: instructorId, // Associate the instructor with the course
+      });
+  
+      // Save the course to the database
+      const savedCourse = await course.save();
+  
+      // Return the saved course
+      return savedCourse;
+    } catch (err) {
+      console.error('Error creating course:', err); // Debugging: Log any error that happens during course creation
+      throw new Error('Error creating course');
+    }
   }
+  
+  
 
   async createModule(moduleData: Partial<Module>, token: string) {
     const decodedToken = this.jwtService.verify(token);

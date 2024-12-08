@@ -1,24 +1,38 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { QuestionDifficulty } from '../dto/create-quiz.dto';
 
 export type QuizDocument = Quiz & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Quiz {
-    @Prop({ type: String, required: true, unique: true })
-    quizId: string;
+  @Prop({ type: String, required: true, unique: true })
+  quizId: string;
 
-    @Prop({ type: String, required: true })
-    moduleId: string;
+  @Prop({ type: String, required: true })
+  moduleId: string;
 
-    @Prop({ type: Array, required: true })
-    questions: string[];
+  @Prop({ type: String, required: true })
+  createdBy: string;
 
-    @Prop({ type: Date, default: Date.now, immutable: true })
-    createdAt: Date;
+  @Prop({ 
+    type: [{
+      difficulty: { type: String, enum: Object.values(QuestionDifficulty) },
+      numberOfQuestions: { type: Number, min: 1 }
+    }]
+  })
+  questionSelectionCriteria: {
+    difficulty: QuestionDifficulty;
+    numberOfQuestions: number;
+  }[];
 
-    @Prop({ type: Date, default: Date.now, immutable: true })
-    createdBy: string;
+  @Prop({ type: [String], required: true })
+  questions: string[];
+
+  @Prop({ type: String, enum: ['MCQ', 'TRUE_OR_FALSE'] })
+  quizType: string;
+
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
 }
 
 export const QuizSchema = SchemaFactory.createForClass(Quiz);

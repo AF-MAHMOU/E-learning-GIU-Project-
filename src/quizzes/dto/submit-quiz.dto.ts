@@ -1,14 +1,31 @@
-import { IsArray, IsString, MinLength } from 'class-validator';
+import { 
+  IsString, 
+  IsNotEmpty, 
+  IsArray, 
+  ValidateNested 
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class AnswerSubmission {
+  @IsString()
+  @IsNotEmpty()
+  questionId: string;
+
+  @IsArray()
+  selectedOptions: string[];
+}
 
 export class SubmitQuizDto {
-    @IsString()
-    @MinLength(4)
-    userId: string;
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
 
-    @IsString()
-    @MinLength(4)
-    quizId: string;
+  @IsString()
+  @IsNotEmpty()
+  quizId: string;
 
-    @IsArray()
-    answers: Record<string, any>[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AnswerSubmission)
+  answers: AnswerSubmission[];
 }

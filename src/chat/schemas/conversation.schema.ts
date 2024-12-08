@@ -6,13 +6,13 @@ export type ConversationDocument = Conversation & Document;
 @Schema()
 export class Conversation {
     @Prop({ type: String, required: true, unique: true })
-    conversationId: string;
+    conversationId: string; // Unique identifier for the conversation
 
     @Prop({ type: [String], required: true })
-    participants: string[];
+    participants: string[]; // Array of participant user IDs
 
     @Prop({ type: Date, default: Date.now })
-    createdAt: Date;
+    createdAt: Date; // Timestamp of conversation creation
 }
 
 export const ConversationSchema = SchemaFactory.createForClass(Conversation);

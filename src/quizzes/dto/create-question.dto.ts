@@ -1,23 +1,54 @@
-import { IsArray, IsEnum, IsString, MinLength } from 'class-validator';
+import { 
+    IsString, 
+    IsNotEmpty, 
+    IsArray, 
+    IsEnum, 
+    ValidateNested, 
+    ArrayMinSize, 
+    IsBoolean 
+} from 'class-validator';
+  
+export enum QuestionType {
+    MCQ = 'MCQ',
+    TRUE_OR_FALSE = 'TRUE_OR_FALSE'
+}
+
+export enum QuestionDifficulty {
+    EASY = 'easy',
+    MEDIUM = 'medium',
+    HARD = 'hard'
+}
 
 export class CreateQuestionDto {
     @IsString()
-    @MinLength(4)
-    quizId: string;
+    @IsNotEmpty()
+    questionBankId: string;
 
     @IsString()
-    @MinLength(4)
+    @IsNotEmpty()
     text: string;
 
+    @IsEnum(QuestionType)
+    type: QuestionType;
+
+    @IsEnum(QuestionDifficulty)
+    difficulty: QuestionDifficulty;
+
     @IsArray()
-    @IsString({ each: true })
-    options: string[];
+    @ArrayMinSize(2)
+    @ValidateNested({ each: true })
+    options: QuestionOption[];
 
     @IsString()
-    @MinLength(1)
+    @IsNotEmpty()
     correctAnswer: string;
+    }
 
+    export class QuestionOption {
     @IsString()
-    @IsEnum(['MCQ', 'TrueFalse'])
-    type: string;
+    @IsNotEmpty()
+    text: string;
+
+    @IsBoolean()
+    isCorrect: boolean;
 }

@@ -2,11 +2,11 @@ import { IsString, IsNotEmpty, IsOptional, MinLength, IsDate } from 'class-valid
 
 export class CreateMessageDto {
     @IsString()
+    @IsOptional()
     @IsNotEmpty()
-    messageId: string; // This is required!
+    messageId: string;
 
     @IsString()
-    @IsNotEmpty()
     conversationId: string;
 
     @IsString()

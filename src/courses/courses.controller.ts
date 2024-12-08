@@ -122,10 +122,48 @@ export class CoursesController {
   @Roles(Role.Instructor)
   async createCourse(
     @Body() createCourseDto: CreateCourseDto,
-    @Body('instructorId') instructorId: string,
+    @Headers('authorization') authHeader: string, // Extract token from header
   ) {
-    return this.courseService.createCourse(createCourseDto, instructorId);
+    // Ensure Authorization header is provided
+    if (!authHeader) {
+      throw new UnauthorizedException('Authorization header not found');
+    }
+  
+    const token = authHeader.split(' ')[1];
+    // Ensure token is extracted
+    if (!token) {
+      throw new UnauthorizedException('Token is missing');
+    }
+  
+    try {
+      // Decode the token to extract instructor ID
+      const decodedToken = this.jwtService.verify(token, {
+        secret: process.env.JWT_SECRET,
+      });
+      
+      console.log('Decoded Token:', decodedToken); // Debugging: Check decoded token structure
+  
+      const instructorId = decodedToken.userId; // Ensure this matches your JWT payload's field name
+  
+      if (!instructorId) {
+        throw new UnauthorizedException('Instructor ID not found in token');
+      }
+  
+      // Call the service to create the course
+      const course = await this.courseService.createCourse(createCourseDto, instructorId);
+  
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Course created successfully',
+        data: course,
+      };
+    } catch (err) {
+      console.error('JWT Verification Error:', err); // Debugging: log any verification issues
+      throw new UnauthorizedException('Invalid or expired token');
+    }
   }
+  
+  
 
   @Post('module/create')
   @UseGuards(RolesGuard)
