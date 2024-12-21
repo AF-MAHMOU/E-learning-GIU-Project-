@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException,NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../users/user.service';
 import * as bcrypt from 'bcrypt';
@@ -19,6 +19,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.approved && user.role == 'instructor') {
+      throw new UnauthorizedException('Your account is pending approval');
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (isPasswordValid) {
       const payload = {
@@ -27,7 +31,6 @@ export class AuthService {
         role: user.role,
       };
       const token = this.jwtService.sign(payload);
-      console.log('Generated Token:', token); // Add this line to debug
       return { access_token: token, role: user.role };
     }
 
@@ -37,15 +40,52 @@ export class AuthService {
   // Register function
   async register(registerDto: any) {
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    const isInstructor = registerDto.role === 'instructor';
+
     return this.usersService.createUser({
       ...registerDto,
       password_hash: hashedPassword,
+      approved: !isInstructor, // Instructors need admin approval
     });
   }
 
-  // Logout function: Add token to blacklist
+  // Approve user function
+  async approveUser(adminId: string, userId: string) {
+    const admin = await this.usersService.findUserById(adminId);
+
+    if (admin.role !== 'admin') {
+      throw new UnauthorizedException('Only admins can approve users');
+    }
+
+    const user = await this.usersService.updateUser(userId, { approved: true });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    return { message: `User ${user.name} has been approved.` };
+  }
+
+  // Reject an instructor by deleting the user
+  async rejectUser(adminId: string, userId: string): Promise<string> {
+    const admin = await this.usersService.findUserById(adminId);
+    if (!admin || admin.role !== 'admin') {
+      throw new NotFoundException('Admin not found or not authorized');
+    }
+
+    const user = await this.usersService.findUserById(userId);
+    if (!user || user.role !== 'instructor') {
+      throw new NotFoundException('Instructor not found');
+    }
+
+    // Delete the instructor from the database
+    await this.usersService.findByIdAndDelete(userId);
+
+    return `Instructor ${user.name} has been rejected and deleted from the system.`;
+  }
+
+  // Logout function
   async logout(token: string) {
-    this.blacklistedTokens.push(token); // Add token to blacklist (in-memory or DB)
+    this.blacklistedTokens.push(token); // Add token to blacklist
     return { message: 'Logged out successfully' };
   }
 
@@ -61,7 +101,7 @@ export class AuthService {
     }
 
     try {
-      const decoded = this.jwtService.verify(token); // This will throw if the token is expired or invalid
+      const decoded = this.jwtService.verify(token);
       return decoded;
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token', error);

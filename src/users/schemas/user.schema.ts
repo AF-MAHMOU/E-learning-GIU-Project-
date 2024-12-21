@@ -69,7 +69,15 @@ export class User {
     immutable: true,
   })
   created_at: Date;
+
+  @Prop({
+    type: Boolean,
+    default: false, // By default, users are not approved
+  })
+  approved: boolean;
+  
 }
+
 
 export const UserSchema = SchemaFactory.createForClass(User);
 

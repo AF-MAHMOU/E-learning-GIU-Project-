@@ -10,8 +10,6 @@ import { Module, ModuleDocument } from './schemas/module.schema';
 import { Progress, ProgressDocument } from './schemas/progress.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException } from '@nestjs/common';
-
 
 @Injectable()
 export class CourseService {
@@ -23,9 +21,7 @@ export class CourseService {
   ) {}
 
   // Student Services
-  // Not working.
   async searchCourses(filters: any) {
-    // Build the query directly from valid filters
     const searchQuery: any = {};
     if (filters.title) {
       searchQuery['title'] = { $regex: new RegExp(filters.title, 'i') };
@@ -34,14 +30,10 @@ export class CourseService {
       searchQuery['category'] = { $regex: new RegExp(filters.category, 'i') };
     }
 
-    // Execute the query
     const courses = await this.courseModel.find(searchQuery).exec();
 
-    // Handle no results found
     if (!courses || courses.length === 0) {
-      throw new NotFoundException(
-        'No courses found matching the search criteria',
-      );
+      throw new NotFoundException('No courses found matching the search criteria');
     }
 
     return courses;
@@ -50,64 +42,44 @@ export class CourseService {
   async enrollInCourse(courseId: string, userId: string) {
     const course = await this.courseModel.findById(courseId);
     if (!course) throw new NotFoundException('Course not found');
-  
+
     const progress = new this.progressModel({
       progressId: uuidv4(),
-      userId, // Directly use the userId passed from the controller
+      userId,
       courseId,
       completionPercentage: 0,
       lastAccessed: new Date(),
     });
-  
+
     return progress.save();
   }
-  
-  
 
-  async getStudentProgress(token: string) {
-    const decodedToken = this.jwtService.verify(token);
-    const userId = decodedToken.sub; // Assuming the userId is stored in the 'sub' field
-
+  async getStudentProgress(userId: string) {
     return this.progressModel.find({ userId });
   }
 
   // Instructor Services
   async createCourse(courseData: Partial<Course>, instructorId: string) {
     try {
-      // Log to ensure the received instructor ID is valid
-      console.log('Instructor ID:', instructorId);
-  
-      // Create the course with the provided data and instructorId
       const course = new this.courseModel({
         ...courseData,
-        id: uuidv4(),  // Ensure each course has a unique ID
-        createdBy: instructorId, // Associate the instructor with the course
+        id: uuidv4(),
+        createdBy: instructorId,
       });
-  
-      // Save the course to the database
-      const savedCourse = await course.save();
-  
-      // Return the saved course
-      return savedCourse;
+
+      return course.save();
     } catch (err) {
-      console.error('Error creating course:', err); // Debugging: Log any error that happens during course creation
       throw new Error('Error creating course');
     }
   }
-  
-  
 
-  async createModule(moduleData: Partial<Module>, token: string) {
-    const decodedToken = this.jwtService.verify(token);
-    const instructorId = decodedToken.sub; // Assuming the instructorId is stored in the 'sub' field
-
+  async createModule(moduleData: Partial<Module>, instructorId: string) {
     const course = await this.courseModel.findOne({
-      courseId: moduleData.courseId,
+      id: moduleData.courseId,
       createdBy: instructorId,
     });
 
-    if (!course)
-      throw new ForbiddenException('Not authorized to modify this course');
+    if (!course) throw new ForbiddenException('Not authorized to modify this course');
 
     const module = new this.moduleModel({
       ...moduleData,
@@ -116,20 +88,12 @@ export class CourseService {
     return module.save();
   }
 
-  async updateCourse(
-    courseId: string,
-    updateData: Partial<Course>,
-    token: string,
-  ) {
-    const decodedToken = this.jwtService.verify(token);
-    const instructorId = decodedToken.sub; // Assuming the instructorId is stored in the 'sub' field
-
+  async updateCourse(courseId: string, updateData: Partial<Course>, instructorId: string) {
     const course = await this.courseModel.findOne({
       id: courseId,
       createdBy: instructorId,
     });
-    if (!course)
-      throw new ForbiddenException('Not authorized to modify this course');
+    if (!course) throw new ForbiddenException('Not authorized to modify this course');
 
     return this.courseModel.findOneAndUpdate(
       { id: courseId },
@@ -142,15 +106,4 @@ export class CourseService {
   async getAllCourses() {
     return this.courseModel.find();
   }
-
-  // DO NOT IMPLEMENT
-  // async archiveCourse(courseId: string) {
-  //     // Implementation would depend on how you want to handle archiving
-  //     // Could be a soft delete, moving to separate collection, etc.
-  //     return this.courseModel.findOneAndUpdate(
-  //         { id: courseId },
-  //         { $set: { status: 'archived' } },
-  //         { new: true }
-  //     );
-  // }
 }

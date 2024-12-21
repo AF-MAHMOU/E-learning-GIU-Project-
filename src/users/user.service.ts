@@ -62,4 +62,35 @@ export class UserService {
     }
     return user;
   }
+
+
+    // Fetch a user by their ID
+    async findUserById(userId: string): Promise<User | null> {
+      const user = await this.userModel.findOne({ user_id: userId }).exec();
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      return user;
+    }
+// Delete a user by their ID
+async findByIdAndDelete(userId: string): Promise<void> {
+  const user = await this.userModel.findOneAndDelete({ user_id: userId }).exec();
+  if (!user) {
+    throw new NotFoundException('User not found or already deleted');
+  }
+}
+
+    async updateUser(userId: string, updates: Partial<User>): Promise<User | null> {
+      const user = await this.userModel.findOneAndUpdate(
+        { user_id: userId },
+        { $set: updates },
+        { new: true, runValidators: true },
+      ).exec();
+  
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+  
+      return user;
+    }
 }

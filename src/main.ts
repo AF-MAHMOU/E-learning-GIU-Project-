@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+const cors = require('cors');
 import * as mongoose from 'mongoose';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -18,9 +19,12 @@ async function bootstrap() {
   }
 
   await mongoose.connect(mongoUri);
-
-  await app.listen(3000);
-  console.log('Application is running on: http://localhost:3000');  // Added log here
+  app.use(cors({
+    origin: 'http://localhost:3000', // Allow requests from your frontend
+  }));
+  
+  await app.listen(process.env.PORT);
+  console.log(`Application is running on: http://localhost:${process.env.PORT}`);
  console.log('JWT_SECRET:', process.env.JWT_SECRET); 
 
 }
