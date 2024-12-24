@@ -24,7 +24,7 @@ export default function RegisterStudent() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      await axios.post('http://localhost:3002/auth/register', { ...data, role: 'student' });
+      await axios.post('http://localhost:5000/auth/register', { ...data, role: 'student' });
       alert('Student registration successful!');
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -37,7 +37,7 @@ export default function RegisterStudent() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <h2>Register as Student</h2>
       <input {...register('name')} placeholder="Name" />
       <p>{errors.name?.message}</p>
